@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact - Teun P.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2265%22 font-family=%22IBM Plex Mono,monospace%22 font-size=%2250%22 font-weight=%22600%22 text-anchor=%22middle%22 fill=%22%23111%22>TP</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header wrap" id="home">
+    <div class="topline">
+      <div>Teun P.</div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="projects/index.html">Projects</a>
+        <a href="index.html#about">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Contact</div>
+          <h2>Get in touch</h2>
+        </div>
+      </div>
+
+      <div class="contact-copy">
+        <p>
+          Have a project idea, question, or just want to say hello? Fill out the form below and I’ll get back to you as soon as I can.
+        </p>
+      </div>
+
+      <div class="form-container">
+        <div data-fs-success class="form-message form-success">
+          Message sent! I’ll get back to you soon.
+        </div>
+        <div data-fs-error class="form-message form-error">
+          Something went wrong. Please try again.
+        </div>
+
+        <form id="fs-form">
+          <div class="form-row">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" data-fs-field />
+            <span data-fs-error="name" class="field-error"></span>
+          </div>
+
+          <div class="form-row">
+            <label for="email">Email*</label>
+            <input type="email" id="email" name="email" data-fs-field required />
+            <span data-fs-error="email" class="field-error"></span>
+          </div>
+
+          <div class="form-row">
+            <label for="message">Message*</label>
+            <textarea id="message" name="message" data-fs-field required rows="6"></textarea>
+            <span data-fs-error="message" class="field-error"></span>
+          </div>
+
+          <button type="submit" class="btn" data-fs-submit-btn>Send message</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <div class="footer-inner">
+      <span>Teun P.</span>
+      <span>Data scientist · Portfolio and notes</span>
+      <div class="footer-links">
+        <a href="https://github.com/teunpe" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+    formspree('initForm', { formElement: '#fs-form', formId: 'mvzjyzgl' });
+  </script>
+  <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+</body>
+</html>
