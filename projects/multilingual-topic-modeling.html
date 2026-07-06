@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unlocking Telegram's Multilingual Topics: Clustering 12,000+ Channels Across 100+ Languages — Teun P.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2265%22 font-family=%22IBM Plex Mono,monospace%22 font-size=%2250%22 font-weight=%22600%22 text-anchor=%22middle%22 fill=%22%23111%22>TP</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* Mermaid diagram sizing */
+    .flowchart {
+      width: 100%;
+      overflow: auto;
+      margin: 1.5em 0;
+    }
+    .mermaid {
+      min-width: 700px;
+      font-size: 14px;
+      max-width: none !important;
+    }
+    /* Prevent node text from wrapping */
+    .mermaid .label {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="has-toc">
+  <header class="header wrap">
+    <div class="topline">
+      <div>Teun P.</div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="../index.html">Home</a>
+        <a href="../projects/index.html">Projects</a>
+        <a href="index.html">Blog</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="toc-sidebar">
+      <nav class="toc" aria-label="Page headings">
+        <h3>On this page</h3>
+        <ul id="toc-list"></ul>
+      </nav>
+    </aside>
+
+    <main class="wrap">
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Blog</div>
+          <h2>Unlocking Telegram's Multilingual Topics: How BERT Struggles with Cross-Language Clustering</h2>
+        </div>
+        <p>2024 &middot; Python &middot; BERT &middot; UMAP &middot; HDBSCAN &middot; Topic Modeling &middot; Multilingual NLP &middot; TF-IDF &middot; Clustering &middot; Telegram</p>
+      </div>
+
+      <article>
+        <div class="hero">
+          <p><strong>Built a multilingual topic modeling pipeline that clusters 12,367 Telegram channels across 100+ languages using BERT embeddings and UMAP, identifying 96 distinct topics. Achieved 20% successful topic labeling despite computational constraints processing &lt;10% of the dataset.</strong></p>
+        </div>
+
+        <h3>Introduction</h3>
+        <p>Telegram has grown into one of the world's largest social platforms, attracting over 800 million users with its promise of privacy and minimal moderation. But this same lack of oversight has made it a haven for criminal organizations, extremist groups, and other actors operating outside mainstream platforms.</p>
+
+        <p>For researchers, journalists, and law enforcement, understanding what's being discussed on Telegram is crucial. But there's a major obstacle: <strong>Telegram is incredibly multilingual</strong>. English channels are a minority. The platform hosts significant communities in Russian, Persian, Uzbek, Arabic, Spanish, and dozens of other languages.</p>
+
+        <p>If you want to understand the full scope of activity on Telegram, you need a multilingual approach. Manual analysis is impossible at this scale. As such, topic modeling seems like a viable approach.</p>
+
+        <hr>
+
+        <h3>The Challenge: Topic Modeling on Short, Multilingual Text</h3>
+        <p>Topic modeling is a well-established technique for discovering themes in large text collections. However, it's notoriously difficult with social media data for two reasons:</p>
+
+        <ol>
+          <li><strong>Short texts</strong>: Social media posts are brief, and topic modeling typically needs substantial text to work well</li>
+          <li><strong>Multiple languages</strong>: Most topic modeling approaches work best on a single language</li>
+        </ol>
+
+        <p>The existing work on Telegram topic modeling, like the <a href="https://github.com/teunpe/TxMM">TGDataset</a> project, used LDA (Latent Dirichlet Allocation) but was limited to English-only channels. I wanted to go further: <strong>analyze all channels, regardless of language, in one unified approach.</strong></p>
+
+        <hr>
+
+        <h3>Our Solution: A Multilingual Embedding Pipeline</h3>
+        <p>I developed a pipeline that combines multilingual BERT embeddings with dimensionality reduction and density-based clustering to identify topics across languages.</p>
+
+        <h4>The Pipeline</h4>
+
+        <div class="flowchart">
+          <div class="mermaid">
+graph 
+    A[Raw Telegram Messages] --> D[m-BERT Embeddings]
+    D --> F[UMAP Dimensionality Reduction]
+    F --> G[HDBSCAN Clustering]
+    G --> H[TF-IDF Analysis]
+          </div>
+        </div>
+
+        <h4>1. Data Collection</h4>
+        <p>I started with the TGDataset. Given computational constraints, I had to limit the scope:</p>
+        <ul>
+          <li>Extracted first 100 messages from each channel</li>
+          <li>Processed ~10% of the full dataset (12,367 channels)</li>
+          <li>Tokenized to 512-character maximum (BERT's limit)</li>
+        </ul>
+
+        <h4>2. Multilingual Embeddings with BERT</h4>
+        <p>To handle multiple languages, I used <strong>multilingual BERT (m-BERT)</strong>. This pre-trained model understands 104 languages and can create meaningful embeddings for text in any of them.</p>
+        <ul>
+          <li>Generated embeddings for each message</li>
+          <li>Averaged them to create a single embedding representing the entire channel</li>
+        </ul>
+
+        <h4>3. Dimensionality Reduction with UMAP</h4>
+        <p>BERT's 768 dimensions are great for semantic richness but terrible for clustering. Used UMAP to:</p>
+        <ul>
+          <li>Reduce to 10 dimensions</li>
+          <li>Preserve local and global structure</li>
+          <li>Avoid the curse of dimensionality</li>
+        </ul>
+        <p>Tested multiple neighbor parameters (n=2, 10, 50, 100) to find optimal clustering.</p>
+
+        <h4>4. Clustering with HDBSCAN</h4>
+        <p>With the reduced embeddings, I applied <strong>HDBSCAN</strong>, a density-based clustering algorithm. Unlike traditional clustering methods, HDBSCAN:</p>
+        <ul>
+          <li>Doesn't require specifying the number of clusters upfront</li>
+          <li>Can identify noise/outliers (channels that don't fit any topic)</li>
+          <li>Creates clusters of varying densities</li>
+        </ul>
+        <p>I set a minimum cluster size of 15 channels to ensure we only kept meaningful groups.</p>
+
+        <h4>5. Understanding the Clusters with TF-IDF Word Clouds</h4>
+        <p>To interpret what each cluster represented, I:</p>
+        <ul>
+          <li>Extracted the top 50 terms from each cluster using TF-IDF</li>
+          <li>Generated word clouds to visualize the most important terms</li>
+          <li>Translated non-English terms to English using the <code>deep-translate</code> package</li>
+        </ul>
+        <p>This gave us a way to "see" what each topic cluster was about.</p>
+        <img src="../images/topicmodelling.png" alt="Word cloud visualization of a topic cluster" style="max-width: 100%; height: auto;">
+        <p><em>Figure: Word cloud visualization of a topic cluster</em></p>
+        <hr>
+
+        <h3>The Results: How Good Is This Approach?</h3>
+
+        <h4>Clustering Performance</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>HDBScan neighbours (n)</th>
+              <th>Clusters Found</th>
+              <th>Unclustered</th>
+              <th>Largest Cluster</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2</td>
+              <td>156</td>
+              <td>5,432</td>
+              <td>1,287</td>
+            </tr>
+            <tr>
+              <td><strong>10</strong></td>
+              <td><strong>96</strong></td>
+              <td><strong>2,005</strong></td>
+              <td><strong>3,646</strong></td>
+            </tr>
+            <tr>
+              <td>50</td>
+              <td>42</td>
+              <td>1,892</td>
+              <td>4,589</td>
+            </tr>
+            <tr>
+              <td>100</td>
+              <td>38</td>
+              <td>2,145</td>
+              <td>5,012</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Optimal setting</strong>: n=10 neighbors gave the most reasonable clustering with 96 distinct topics.</p>
+
+        <h4>Topic Distribution</h4>
+        <p><strong>3 Largest Clusters:</strong></p>
+        <ul>
+          <li>Cluster 1: 3,646 channels (85% Russian)</li>
+          <li>Cluster 2: 1,323 channels (93% Uzbek)</li>
+          <li>Cluster 3: 1,136 channels (94% Persian - Afghan news focus)</li>
+        </ul>
+
+        <p><strong>Language Mixing:</strong></p>
+        <ul>
+          <li>15 out of 96 clusters showed clear multilingual mixing</li>
+          <li>81 clusters were dominated by a single language</li>
+          <li>This suggests <strong>limited cross-language semantic alignment</strong> in m-BERT</li>
+        </ul>
+
+        <p><strong>Manual Labeling:</strong></p>
+        <ul>
+          <li>Successfully identified topics for 30 clusters</li>
+          <li>Covered ~20% of all channels (2,458 channels)</li>
+          <li>Remaining clusters had unclear or noisy word patterns</li>
+        </ul>
+
+        <h4>Performance Metrics</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Channels processed</td>
+              <td>12,367</td>
+            </tr>
+            <tr>
+              <td>Messages per channel</td>
+              <td>100</td>
+            </tr>
+            <tr>
+              <td>Embedding dimension</td>
+              <td>768 &rarr; 10</td>
+            </tr>
+            <tr>
+              <td>Clusters identified</td>
+              <td>96</td>
+            </tr>
+            <tr>
+              <td>Topics successfully labeled</td>
+              <td>30 (20% of channels)</td>
+            </tr>
+            <tr>
+              <td>Processing time per channel</td>
+              <td>~3-5 seconds</td>
+            </tr>
+            <tr>
+              <td>Total dataset processed</td>
+              <td>&lt;10% of full archive</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Key insight</strong>: The approach works, but is fundamentally limited by computational constraints and the cross-language capabilities of m-BERT.</p>
+
+        <p>All code is available on <a href="https://github.com/teunpe/TxMM">GitHub</a>.</p>
+      </article>
+    </section>
+  </main>
+    </div>
+
+  <footer class="wrap footer">
+    <div class="footer-inner">
+      <span>Teun P.</span>
+      <span>Data scientist &middot; Portfolio and notes</span>
+    </div>
+  </footer>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false });
+    
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.hljs) {
+        window.hljs.highlightAll();
+      }
+
+      const article = document.querySelector('article');
+      const tocList = document.getElementById('toc-list');
+      if (!article || !tocList) {
+        return;
+      }
+
+      // Clear existing content
+      tocList.innerHTML = '';
+
+      const headings = article.querySelectorAll('h3, h4');
+      
+      // Track current h3 for nesting h4s
+      let currentH3Item = null;
+      let currentH3List = null;
+
+      headings.forEach(function (heading, index) {
+        if (!heading.id) {
+          const slug = heading.textContent
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+          heading.id = slug ? slug : 'section-' + (index + 1);
+        }
+
+        const tagName = heading.tagName.toLowerCase();
+
+        if (tagName === 'h3') {
+          // Create h3 item with potential children
+          const item = document.createElement('li');
+          item.className = 'toc-h3';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+          
+          // Create nested ul for potential h4 children
+          const childList = document.createElement('ul');
+          childList.className = 'toc-children';
+          item.appendChild(childList);
+          
+          currentH3Item = item;
+          currentH3List = childList;
+          
+          tocList.appendChild(item);
+        } else if (tagName === 'h4' && currentH3List) {
+          // Add h4 under current h3
+          const item = document.createElement('li');
+          item.className = 'toc-h4';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+
+          currentH3List.appendChild(item);
+          
+          // Mark parent as having children
+          if (currentH3Item && !currentH3Item.classList.contains('has-children')) {
+            currentH3Item.classList.add('has-children');
+          }
+        }
+      });
+
+      // Add collapsible behavior to h3 items with children
+      const tocH3Links = tocList.querySelectorAll('li.has-children > a');
+      tocH3Links.forEach(function (link) {
+        const listItem = link.parentElement;
+        const childrenList = listItem.querySelector('.toc-children');
+        
+        // Only add toggle if there are actual children
+        if (childrenList && childrenList.children.length > 0) {
+          // Collapse by default
+          childrenList.classList.add('collapsed');
+          
+          link.style.cursor = 'pointer';
+          link.style.display = 'flex';
+          link.style.alignItems = 'center';
+          
+          const toggleIcon = document.createElement('span');
+          toggleIcon.className = 'toc-toggle';
+          toggleIcon.innerHTML = '&#9660;';
+          toggleIcon.style.marginLeft = '8px';
+          toggleIcon.style.fontSize = '0.7rem';
+          toggleIcon.style.transition = 'transform 0.2s';
+          toggleIcon.style.transform = 'rotate(-90deg)';
+          link.appendChild(toggleIcon);
+          
+          // Toggle when clicking the icon
+          toggleIcon.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isCollapsed = childrenList.classList.toggle('collapsed');
+            toggleIcon.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+          });
+        }
+      });
+      
+      // Initialize Mermaid diagrams
+      const mermaidElements = document.querySelectorAll('.mermaid');
+      mermaidElements.forEach(function(el) {
+        const code = el.textContent;
+        el.innerHTML = code;
+        mermaid.init(undefined, el);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rescuing Historical Climate Data — Teun P.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2265%22 font-family=%22IBM Plex Mono,monospace%22 font-size=%2250%22 font-weight=%22600%22 text-anchor=%22middle%22 fill=%22%23111%22>TP</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* Mermaid diagram sizing */
+    .flowchart {
+      width: 100%;
+      overflow: auto;
+      margin: 1.5em 0;
+    }
+    .mermaid {
+      min-width: 700px;
+      font-size: 14px;
+      max-width: none !important;
+    }
+    /* Prevent node text from wrapping */
+    .mermaid .label {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="has-toc">
+  <header class="header wrap">
+    <div class="topline">
+      <div>Teun P.</div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Projects</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="toc-sidebar">
+      <nav class="toc" aria-label="Page headings">
+        <h3>On this page</h3>
+        <ul id="toc-list"></ul>
+      </nav>
+    </aside>
+
+    <main class="wrap">
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Project</div>
+          <h2>Rescuing Historical Climate Data</h2>
+        </div>
+        <p>2025 · University · Python · DuckDB · Pandas</p>
+      </div>
+
+      <article>
+        <div class="hero">
+          <p><strong>I designed and built a complete pipeline to process 227K+ historical weather observations from KNMI archives, converting raw data into SEF format for ERA6 Reanalysis and creating a training dataset for ML-based transcription.</strong></p>
+        </div>
+
+        <div class="flowchart">
+          <div class="mermaid">
+flowchart LR
+    A[Raw Data
+Excel/TXT/.dat] --> B[Convert to CSV
+Pandas]
+    B --> C[Load into DuckDB]
+    C --> D[Quality Check
+NULLs, Timezones]
+    D --> E[Wrangle & Reshape]
+    E --> F1[Parquet]
+    E --> F2[SEF for ERA6]
+    E --> F3[ML Training Data]
+          </div>
+        </div>
+
+        <h3>Introduction</h3>
+        <p>
+          I carried out this project independently for a university Data Engineering course. I rescued and standardized historical climate data from the KNMI archives, specifically from the Caribbean part of the Kingdom of the Netherlands and Suriname. The archives contain weather tables dating back to 1896 and spanning up to 1962, covering six countries, with one Excel or TXT file per year. While a portion of this data had already been manually transcribed, it required further processing to integrate into modern systems.
+        </p>
+
+        <p>My objectives were:</p>
+        <ol>
+          <li><strong>Convert data to SEF (Station Exchange Format)</strong>: I prepared the data for submission to the upcoming ERA6 Reanalysis by converting it into SEF files, a TSV format with metadata headers (station location, height) followed by recordings of a single variable, such as air pressure.</li>
+          <li><strong>Create a training dataset for machine learning</strong>: I developed a dataset of transcribed tables paired with their corresponding images, which will train ML models to automate transcription of handwritten or printed tables, accelerating future data rescue efforts.</li>
+        </ol>
+
+        <p>
+          To expand the scope and robustness of the project, I incorporated two additional historical datasets:
+        </p>
+        <ul>
+          <li><strong>Dr. Holyoke’s Dataset</strong>: weather records from Salem, Massachusetts, spanning 1786–1829, with pressure and temperature readings taken three times daily.</li>
+          <li><strong>Prof. Wigglesworth’s Dataset</strong>: weather records from Cambridge, Massachusetts, spanning 1786–1789, with indoor/outdoor temperature (three times daily) and pressure (twice daily).</li>
+        </ul>
+
+        <p>I also converted both datasets to SEF format to ensure consistency and usability across the project.</p>
+
+        <p>I made all code and workflows open-source and available on <a href="https://github.com/teunpe/KNMI_Data_Rescue/tree/master" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+
+        <h3>Data Sources</h3>
+        <p>I used the following datasets:</p>
+        <ul>
+          <li><strong>KNMI Archives</strong>: historical climate records for the Caribbean and Suriname in Excel and TXT formats, including temperature, precipitation, and other meteorological observations spanning 1896–1962 across six countries.</li>
+          <li><strong>Dr. Holyoke’s Dataset</strong>: climate observations from Salem, Massachusetts (1786–1829), complementing the KNMI data with regional pressure and temperature readings.</li>
+          <li><strong>Prof. Wigglesworth’s Dataset</strong>: historical records from Cambridge, Massachusetts (1786–1789), expanding temporal and geographical coverage with indoor/outdoor temperature and pressure data.</li>
+        </ul>
+
+        <h3>Methodology</h3>
+
+        <h4>Step 1: Conversion to CSV</h4>
+        <p>
+          To streamline the data processing pipeline, I first converted all raw files into CSV format for easier loading into DuckDB. This step was critical due to the diverse formatting of the source files (Excel, TXT, and .dat).
+        </p>
+
+        <h5>KNMI Data</h5>
+        <p>For the KNMI datasets, I varied the conversion process based on the structure of each source file:</p>
+        <ul>
+          <li><strong>Aruba, Bonaire, Curaçao, Saba, and Statia</strong>: these datasets followed a consistent format, with Excel files containing sheets named <code>Regen</code> (rain) and <code>Overig</code> (other). Each sheet had a single header row followed by data entries, so I converted them straightforwardly using Pandas.</li>
+        </ul>
+        <pre><code class="language-python">for sheet in ['Regen', 'Overig']:
+    name, ext = file.split('.')
+    df = pd.DataFrame(
+        pd.read_excel(
+            f"digitized/{dir}/{file}", sheet_name=sheet)
+    )
+    df.to_csv(f'CSVs/{dir}/{name}_{sheet}.csv')
+</code></pre>
+        <ul>
+          <li><strong>Suriname</strong>: this dataset had a single sheet with a multiline header and some rows containing 10-daily totals, so I adjusted the extraction function to account for the multiline header, ensuring accurate conversion to CSV.</li>
+          <li><strong>Willemstad</strong>: the data for Willemstad was provided as CSV-formatted TXT files, which I extracted using Pandas. However, the files were encoded in latin1 (ISO/IEC 8859-1), so I adjusted the code to handle the encoding.</li>
+        </ul>
+
+        <h5>Holyoke &amp; Wigglesworth Data</h5>
+        <p>The Holyoke and Wigglesworth datasets came as .dat files with a regular but unique structure:</p>
+        <ul>
+          <li>Each file began with a line containing the year, followed by a row for the month names (3 per line), and then 31 lines of data for each day of the month.</li>
+          <li>Months with fewer than 31 days resulted in NULL values for the extra days.</li>
+        </ul>
+        <p>To convert these files to CSV, I:</p>
+        <ol>
+          <li>Read the file line by line, grouping them into sets of 33 lines (1 year + 1 month names + 31 data lines).</li>
+          <li>Extracted the year, month names, and daily data for each group and stored them as tuples in a list.</li>
+          <li>Converted the tuples into a Pandas DataFrame, with strings for year, month, and day converted to datetime objects.</li>
+        </ol>
+        <pre><code class="language-python"># Convert Holyoke .dat files to CSV
+def convert_holyoke(file_path):
+    with open(file_path) as f:
+        lines = f.readlines()
+    
+    datalist = []
+    for offset in range(140):
+        year, *months = lines[offset*33].strip(), lines[offset*33+1].split()
+        for i in range(3):
+            for day in range(31):
+                date_str = f'{year}_{months[i]}_{day+1}'
+                datalist.append((date_str, lines[offset*33+day+2].split()[2*i+1:2*i+3]))
+    
+    return pd.DataFrame(datalist).to_csv(file_path + '.csv', index=False)
+</code></pre>
+
+        <h4>Step 2: Loading and Joining Datasets in DuckDB</h4>
+        <p>
+          After converting the files to CSV, I loaded and joined the datasets in DuckDB for efficient processing and quality assessment.
+        </p>
+
+        <h5>KNMI Data</h5>
+        <p>
+          For the KNMI datasets, I loaded the CSV files for <code>Regen</code> (rain) and <code>Overig</code> (other) into DuckDB and joined them on common keys, such as station ID and date. I applied special handling for:
+        </p>
+
+        <ul>
+          <li><strong>Suriname</strong>: the CSV files had a multiline header, so I skipped the first two lines during loading, assigned custom column names, and loaded the data with <code>null_padding</code> and <code>ignore_errors</code> enabled to handle inconsistencies.</li>
+        </ul>
+        <pre><code class="language-sql">SELECT
+    column01 AS "Datum",
+    column02 AS "Luchtdruk_8",
+    ...
+    column32 AS "Regen_wrong",
+FROM read_csv('CSVs/Suriname/*.csv', union_by_name = true, dateformat = '\%Y\%m\%d', skip = 2, null_padding = true, ignore_errors = true);
+</code></pre>
+        <ul>
+          <li><strong>Willemstad</strong>: similar to Suriname, I also skipped headers and handled encoding issues.</li>
+          <li><strong>NULL Value Handling</strong>: the original files used placeholders like <code>'-'</code> (for most KNMI data) or <code>'//////'</code> (for Willemstad) to represent NULL values, so I replaced these with actual NULLs using a Python loop and SQL updates.</li>
+        </ul>
+        <pre><code class="language-sql">UPDATE Aruba
+SET col = NULL
+WHERE TRIM(col) = '-';
+</code></pre>
+        <p>For Willemstad, I targeted the placeholder <code>'//////'</code> instead.</p>
+        <p><strong>Joining Tables</strong>: I joined the <code>Regen</code> and <code>Overig</code> tables for each location using a FULL JOIN on station (<code>Stn</code>) and date (<code>Datum</code>):</p>
+        <pre><code class="language-sql">CREATE TABLE IF NOT EXISTS Aruba AS
+SELECT * FROM
+(SELECT * FROM read_csv('CSVs/Aruba/*Regen.csv', union_by_name = true, dateformat = '\%Y\%m\%d'))
+FULL JOIN 
+(SELECT * FROM read_csv('CSVs/Aruba/*Overig.csv', union_by_name = true, dateformat = '\%Y\%m\%d'))
+USING (Stn, Datum);
+</code></pre>
+
+        <h5>Holyoke &amp; Wigglesworth Data</h5>
+        <p>The CSV conversion produced four separate files (temperature and pressure for both Holyoke and Wigglesworth). I loaded them into DuckDB and addressed NULL placeholders:</p>
+        <ul>
+          <li><strong>Holyoke</strong>: pressure data used <code>9999.9</code> as a NULL placeholder, while temperature data used <code>-99.0</code>.</li>
+          <li><strong>Wigglesworth</strong>: pressure data used <code>100</code> as a NULL placeholder, while temperature data used <code>-99.9</code>.</li>
+        </ul>
+        <p>After setting the NULL values, I joined the pressure and temperature tables to create a single table for each dataset (Holyoke and Wigglesworth).</p>
+
+        <h4>Step 3: Data Exploration and Quality Assessment</h4>
+        <p>After loading the datasets into DuckDB, I performed data exploration to validate the integrity and accuracy of the data.</p>
+
+        <h5>KNMI Data</h5>
+        <ul>
+          <li><strong>NULL Values</strong>: I discovered that joining yearly datasets introduced additional NULL values. All rows contained at least the date and station number, but the variety of measured variables resulted in a high percentage of NULLs across the datasets. The table below summarizes the dataset sizes and NULL percentages:</li>
+        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Dataset</th>
+              <th>Entries</th>
+              <th>Percent NULL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Aruba</td><td>17,537</td><td>44.1%</td></tr>
+            <tr><td>Bonaire</td><td>20,091</td><td>55.5%</td></tr>
+            <tr><td>Curaçao</td><td>62,419</td><td>77.9%</td></tr>
+            <tr><td>Saba</td><td>38,726</td><td>42.0%</td></tr>
+            <tr><td>St. Eustatius</td><td>4,383</td><td>6.1%</td></tr>
+            <tr><td>Suriname</td><td>25,275</td><td>21.6%</td></tr>
+            <tr><td>Willemstad</td><td>58,803</td><td>39.9%</td></tr>
+            <tr><th>Total</th><th>227,054</th><th>49.7%</th></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Column Validation</strong>: I used DuckDB’s <code>SUMMARIZE</code> to inspect columns for minimum, maximum, unique entries, and averages. I further inspected columns with unusual characteristics by checking distinct entries and comparing them to expected ranges, such as temperature in Curaçao should not drop below 0°C. This confirmed that all tables, except for Willemstad, were valid.</li>
+          <li><strong>Willemstad Precipitation Issue</strong>: I found that the Willemstad data was recorded without decimals, requiring manual inference for decimal placement. For most columns, this was straightforward, but precipitation data posed a challenge.</li>
+        </ul>
+        <ul>
+          <li>When I divided by 10, I found unrealistic values, such as greater than 500 mm/day, which did not align with historical records.</li>
+          <li>Dividing by 100 was inconsistent with other variables and measurement instruments of the era.</li>
+          <li>My investigation revealed that pre-1922 data was consistent with division by 10, but post-1922 data still had issues. After discussing with KNMI, I excluded Willemstad precipitation data from further processing.</li>
+        </ul>
+        <p><strong>Time Zone Conversion</strong>: I discovered that times were recorded in local time, with time zones varying by country and year. Automatic conversion using DuckDB’s IANA Time Zone Database (TZDB) failed due to historical inaccuracies, so I manually set time zones based on historical data:</p>
+        <pre><code class="language-sql">-- Adjust timestamps for Curaçao's historical timezone change (1912)
+ALTER TABLE Curacao_Temp ADD COLUMN timestamp TIMESTAMP WITH TIME ZONE;
+
+UPDATE Curacao_Temp AS a
+SET timestamp = (
+    CASE
+        WHEN a.Tijd IS NULL OR a.Tijd = 24 THEN
+            (a.Datum + INTERVAL '24 hours') AT TIME ZONE 'UTC'
+        WHEN a.Datum < '1912-02-12' THEN
+            (a.Datum + to_hours(a.Tijd/100) + to_minutes(a.Tijd%100) +
+             INTERVAL '4 hours 35 minutes 24 seconds') AT TIME ZONE 'UTC'
+        ELSE
+            (a.Datum + to_hours(a.Tijd/100) + to_minutes(a.Tijd%100) +
+             INTERVAL '4 hours 30 minutes') AT TIME ZONE 'UTC'
+    END
+);
+</code></pre>
+        <p>For Saba, St. Eustatius, and Bonaire, historical time zone data was unavailable, so I used the closest available time zone as an approximation.</p>
+
+        <h5>Holyoke &amp; Wigglesworth Data</h5>
+        <ul>
+          <li><strong>Column Validation</strong>: I applied the same workflow as for KNMI data, inspecting columns for reasonable ranges. I found no issues.</li>
+          <li><strong>Time Zone Adjustment</strong>: I used the <code>America/New_York</code> time zone, which DuckDB handled correctly without cross-links or historical discrepancies.</li>
+        </ul>
+
+        <h4>Step 4: Reshaping and Wrangling</h4>
+        <p>I designed the reshaping and wrangling step to prepare the data for two downstream tasks:</p>
+        <ol>
+          <li><strong>SEF Conversion</strong>: report all observations of one variable from one weather station in a single row per timestamp.</li>
+          <li><strong>Training Data Preparation</strong>: include observations of all variables from one weather station during one month in a single row per date.</li>
+        </ol>
+        <p>To balance these requirements, I structured the database to join observations by time and weather station, keeping separate tables for each station. This approach ensures flexibility for both use cases.</p>
+
+        <h5>KNMI Data</h5>
+        <ul>
+          <li><strong>Aruba, Bonaire, Curaçao, Saba, St. Eustatius, and Willemstad</strong>: after quality control, I required no additional wrangling. I joined the pressure and temperature tables, resulting in the desired structure: one row per station per timestamp.</li>
+          <li><strong>Suriname</strong>: the Suriname dataset required significant wrangling due to its unique structure:</li>
+        </ul>
+        <ul>
+          <li>Measurements for a single variable were split across multiple columns, for example air pressure recorded at 8:00, 12:00, 18:00, and so on.</li>
+          <li>The times of measurement varied by year:
+            <ul>
+              <li>1896–1899: measurements at 8:00, 12:00, 18:00.</li>
+              <li>1899–1904: measurements at 8:00, 14:00, 19:00.</li>
+              <li>1905 onward: measurements at 8:00, 14:00, 18:00, 19:00.</li>
+            </ul>
+          </li>
+        </ul>
+        <p>My wrangling steps:</p>
+        <ol>
+          <li>Loaded CSV files for each group of years into separate tables.</li>
+          <li>Assigned column names including the time of measurement, such as <code>Temperature_8</code> for 8:00 temperature.</li>
+          <li>Joined the tables by including every possible column in each table, using NULL values where a column was not present for a specific group of years.</li>
+          <li>Normalized column names to exclude the time of measurement and set the timestamp column.</li>
+        </ol>
+        <p>This resulted in a table with the same structure as the other KNMI datasets.</p>
+
+        <p>After wrangling, I stored the data as Parquet files, with one file per country.</p>
+
+        <h5>Holyoke &amp; Wigglesworth Data</h5>
+        <ul>
+          <li>The .dat files for Holyoke and Wigglesworth were structured similarly to Suriname, with one column per variable per time of day. However, the measurement times were consistent across all years, simplifying the process.</li>
+        </ul>
+        <p>My wrangling steps:</p>
+        <ol>
+          <li>Selected groups of columns with the same measurement time.</li>
+          <li>Added a timestamp column for each group.</li>
+          <li>Joined the groups of columns to create a final table with variables and their measurements at each timestamp.</li>
+        </ol>
+
+        <h4>Step 5: Creating Data Products</h4>
+
+        <h5>SEF Conversion</h5>
+        <p>The Station Exchange Format (SEF) requires all observations of one variable from one weather station to be reported in a standardized TSV format with metadata headers. To convert the wrangled data to SEF, I:</p>
+        <ol>
+          <li><strong>Set Up Metadata</strong>: defined metadata for each station, including station ID, name, latitude, longitude, altitude, variable (<code>Vbl</code>), statistic (<code>Stat</code>), units (<code>Units</code>), and source information.</li>
+          <li><strong>Extracted Data for One Variable</strong>: used DuckDB to select the relevant columns, such as timestamp, precipitation, and quality flag.</li>
+        </ol>
+        <pre><code class="language-sql">df &lt;&lt; SELECT timestamp, Precipitation, qPrecipitation FROM aruba.parquet</code></pre>
+        <ol start="3">
+          <li><strong>Prepared the Data</strong>:
+            <ul>
+              <li>Converted timestamps to UTC and formatted them as Year, Month, Day, Hour, and Minute.</li>
+              <li>Added decimal precision, such as dividing precipitation by 10.</li>
+              <li>Included quality control metadata, such as a <code>qc=</code> flag.</li>
+            </ul>
+          </li>
+          <li><strong>Wrote to SEF Format</strong>: I wrote the metadata header followed by the data table in TSV format.</li>
+        </ol>
+
+        <h5>Training Data Creation</h5>
+        <p>I designed the training data to include all variables from one weather station during one month in a single row per date. This structure is ideal for training machine learning models for automated transcription.</p>
+        <p><strong>Example query for Bonaire (1920)</strong>:</p>
+        <pre><code class="language-sql">-- Create training data: Bonaire 1920
+CREATE TABLE Bonaire_1920 AS
+SELECT *
+FROM (SELECT Date, maxPressure, minPressure, maxTemperature, minTemperature
+      FROM 'dbs/bonaire.parquet' WHERE maxPressure IS NOT NULL)
+JOIN (SELECT Date, Precipitation AS rainKralendijk
+      FROM 'dbs/bonaire.parquet' WHERE Stn == 44) USING (Date)
+JOIN (SELECT Date, Precipitation AS rainRincon
+      FROM 'dbs/bonaire.parquet' WHERE Stn == 42) USING (Date)
+WHERE Date < '1921-01-01'
+ORDER BY Date;
+</code></pre>
+
+        <h3>Conclusion</h3>
+        <p>
+          I prepared a set of datasets of rescued climate data for two downstream tasks: incorporation in the ERA reanalysis dataset and preparation of a training dataset. Using Python and DuckDB, I created a coherent, easy-to-use dataset from the original Excel and TXT files.
+        </p>
+        <p>
+          My quality control process primarily involved handling NULL values, converting timestamps, and manually validating column entries. Part of the dataset required significant wrangling due to measurements at different times being split across columns and measurement times varying over the years. By normalizing column names and timestamps, I transformed this into a consistent format, ready for downstream tasks.
+        </p>
+        <p>
+          I stored the final datasets as Parquet files, ensuring robustness and ease of use for future applications. I will make the datasets accessible through multiple platforms: the ERA reanalysis dataset, the KNMI Data Platform, and a GitHub repository. This ensures that the data is available for downstream use and easy to find.
+        </p>
+        <p>
+          The methodologies and tools I used in this project can serve as a blueprint for similar initiatives. The workflow I developed can be applied to similar datasets of rescued data annotated into Excel files that need to be structured for SEF conversion. Additionally, the steps I took to prepare this dataset can be investigated to determine best practices for formatting rescued data during the transcription process. Keeping the downstream processing in mind during transcription can speed up the process and increase accuracy by reducing errors and uncertainties in data processing.
+        </p>
+
+        <h3>Tools and Technologies</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tool/Technology</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Pandas</td><td>Data cleaning, conversion, and initial processing.</td></tr>
+            <tr><td>DuckDB</td><td>Efficient loading, joining, and querying of large datasets.</td></tr>
+            <tr><td>SEF (Station Exchange Format)</td><td>Standardized TSV format for submitting data to ERA6 Reanalysis.</td></tr>
+            <tr><td>Parquet</td><td>Final storage format for optimized read/write performance and compatibility.</td></tr>
+            <tr><td>GitHub</td><td>Version control and public accessibility for the datasets and workflow scripts.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>References</h3>
+        <ul>
+          <li><a href="https://data.knmi.nl/" target="_blank" rel="noopener noreferrer">KNMI Data Platform</a></li>
+          <li><a href="https://www.ecmwf.int/en/era5" target="_blank" rel="noopener noreferrer">ERA5 Reanalysis Dataset</a></li>
+          <li><a href="https://www.ecmwf.int/en/era6" target="_blank" rel="noopener noreferrer">ERA6 Reanalysis</a></li>
+          <li><a href="https://github.com/C3S-Data-Rescue-Lot1-WP3/SEF" target="_blank" rel="noopener noreferrer">Station Exchange Format (SEF)</a></li>
+          <li><a href="https://pandas.pydata.org/docs/" target="_blank" rel="noopener noreferrer">Pandas Documentation</a></li>
+          <li><a href="https://duckdb.org/docs/" target="_blank" rel="noopener noreferrer">DuckDB Documentation</a></li>
+          <li><a href="https://parquet.apache.org/" target="_blank" rel="noopener noreferrer">Apache Parquet</a></li>
+          <li><a href="https://www.iana.org/time-zones" target="_blank" rel="noopener noreferrer">IANA Time Zone Database (TZDB)</a></li>
+          <li>Schrier, G. van der, et al. (2008). <em>Daily Temperature and Precipitation in Salem, Massachusetts, 1786–1829.</em> <a href="https://doi.org/10.1007/s10584-007-9292-x" target="_blank" rel="noopener noreferrer">Link to paper</a></li>
+          <li>Schrier, G. van der, et al. (2008). <em>Storminess in Cambridge, Massachusetts, 1786–1789.</em> <a href="https://doi.org/10.1029/2007GL032259" target="_blank" rel="noopener noreferrer">Link to paper</a></li>
+        </ul>
+
+        <p><em>Questions or feedback? Reach out or contribute to my <a href="https://github.com/teunpe/KNMI_Data_Rescue/tree/master" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</em></p>
+      </article>
+    </section>
+  </main>
+    </div>
+
+  <footer class="wrap footer">
+    <div class="footer-inner">
+      <span>Teun P.</span>
+      <span>Data scientist · Portfolio and notes</span>
+    </div>
+  </footer>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false });
+    
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.hljs) {
+        window.hljs.highlightAll();
+      }
+
+      const article = document.querySelector('article');
+      const tocList = document.getElementById('toc-list');
+      if (!article || !tocList) {
+        return;
+      }
+
+      // Clear existing content
+      tocList.innerHTML = '';
+
+      const headings = article.querySelectorAll('h3, h4');
+      
+      // Track current h3 for nesting h4s
+      let currentH3Item = null;
+      let currentH3List = null;
+
+      headings.forEach(function (heading, index) {
+        if (!heading.id) {
+          const slug = heading.textContent
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+          heading.id = slug ? slug : 'section-' + (index + 1);
+        }
+
+        const tagName = heading.tagName.toLowerCase();
+
+        if (tagName === 'h3') {
+          // Create h3 item with potential children
+          const item = document.createElement('li');
+          item.className = 'toc-h3';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+          
+          // Create nested ul for potential h4 children
+          const childList = document.createElement('ul');
+          childList.className = 'toc-children';
+          item.appendChild(childList);
+          
+          currentH3Item = item;
+          currentH3List = childList;
+          
+          tocList.appendChild(item);
+        } else if (tagName === 'h4' && currentH3List) {
+          // Add h4 under current h3
+          const item = document.createElement('li');
+          item.className = 'toc-h4';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+
+          currentH3List.appendChild(item);
+          
+          // Mark parent as having children
+          if (currentH3Item && !currentH3Item.classList.contains('has-children')) {
+            currentH3Item.classList.add('has-children');
+          }
+        }
+      });
+
+      // Add collapsible behavior to h3 items with children
+      const tocH3Links = tocList.querySelectorAll('li.has-children > a');
+      tocH3Links.forEach(function (link) {
+        const listItem = link.parentElement;
+        const childrenList = listItem.querySelector('.toc-children');
+        
+        // Only add toggle if there are actual children
+        if (childrenList && childrenList.children.length > 0) {
+          // Collapse by default
+          childrenList.classList.add('collapsed');
+          
+          link.style.cursor = 'pointer';
+          link.style.display = 'flex';
+          link.style.alignItems = 'center';
+          
+          const toggleIcon = document.createElement('span');
+          toggleIcon.className = 'toc-toggle';
+          toggleIcon.innerHTML = '&#9660;';
+          toggleIcon.style.marginLeft = '8px';
+          toggleIcon.style.fontSize = '0.7rem';
+          toggleIcon.style.transition = 'transform 0.2s';
+          toggleIcon.style.transform = 'rotate(-90deg)';
+          link.appendChild(toggleIcon);
+          
+          // Toggle when clicking the icon
+          toggleIcon.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isCollapsed = childrenList.classList.toggle('collapsed');
+            toggleIcon.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+          });
+        }
+      });
+      
+      // Initialize Mermaid diagrams
+      const mermaidElements = document.querySelectorAll('.mermaid');
+      mermaidElements.forEach(function(el) {
+        const code = el.textContent;
+        el.innerHTML = code;
+        mermaid.init(undefined, el);
+      });
+    });
+  </script>
+</body>
+</html>

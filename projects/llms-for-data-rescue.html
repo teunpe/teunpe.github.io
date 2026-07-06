@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unlocking Centuries of Climate Data: AI for Historical Weather Records — Teun P.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2265%22 font-family=%22IBM Plex Mono,monospace%22 font-size=%2250%22 font-weight=%22600%22 text-anchor=%22middle%22 fill=%22%23111%22>TP</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* Mermaid diagram sizing */
+    .flowchart {
+      width: 100%;
+      overflow: auto;
+      margin: 1.5em 0;
+    }
+    .mermaid {
+      min-width: 700px;
+      font-size: 14px;
+      max-width: none !important;
+    }
+    /* Prevent node text from wrapping */
+    .mermaid .label {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="has-toc">
+  <header class="header wrap">
+    <div class="topline">
+      <div>Teun P.</div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Projects</a>
+        <a href="../index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="toc-sidebar">
+      <nav class="toc" aria-label="Page headings">
+        <h3>On this page</h3>
+        <ul id="toc-list"></ul>
+      </nav>
+    </aside>
+
+    <main class="wrap">
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Project</div>
+          <h2>Unlocking Centuries of Climate Data: How AI Can Rescue Historical Weather Records</h2>
+        </div>
+        <p>2025 · Thesis · Python · OpenCV · Google Gemini · Tesseract · OCR · LLMs</p>
+      </div>
+
+      <article>
+        <div class="hero">
+          <p><strong>Built a hybrid AI pipeline that transcribes 19th-century handwritten weather tables with 97% precision, 10x faster than manual transcription. Generated 39K+ synthetic training samples to fine-tune OCR models, unlocking climate data trapped in Caribbean archives.</strong></p>
+        </div>
+
+        <img src="../images/st-eustatius_1911_0002_grayscale.jpg" alt="Historical weather record from Sint Eustatius, 1911" style="max-width: 100%; height: auto;">
+        <p><em>Handwritten weather observations from the Caribbean, containing up to 36 columns of daily meteorological data.</em></p>
+
+        <h3>The Hidden Climate Archive</h3>
+        <p>Millions of handwritten weather observations from the 19th and early 20th centuries are currently trapped in paper archives. These records &mdash; carefully logged by meteorologists over a century ago &mdash; contain invaluable data for understanding long-term climate patterns. Yet they're at risk of permanent loss from deterioration, fire, or flooding, and remain completely inaccessible for modern computer analysis.</p>
+
+        <p>For climate scientists, this data is a goldmine. It could help:</p>
+        <ul>
+          <li>Trace long-term climate change processes</li>
+          <li>Attribute observed changes to specific drivers</li>
+          <li>Validate and improve existing climate models</li>
+          <li>Fill critical gaps in historical data, especially for underrepresented regions like the Global South</li>
+        </ul>
+
+        <p>But there's a bottleneck: manual transcription is painfully slow. An experienced transcriber takes about 45 minutes per sheet. With thousands of sheets in archives like the Royal Netherlands Meteorological Institute (KNMI), this would require decades of work.</p>
+        <p>This is where AI comes in.</p>
+
+        <hr>
+
+        <h3>The Challenge: Why Standard OCR Fails</h3>
+        <p>Historical weather records present a perfect storm of challenges for automated transcription:</p>
+
+        <h4>1. Handwritten Text</h4>
+        <ul>
+          <li>Individual handwriting styles vary wildly between observers</li>
+          <li>Historical scripts look different from modern writing</li>
+          <li>Ink quality varies &mdash; some entries are bold and clear, others barely visible</li>
+        </ul>
+
+        <h4>2. Complex Table Structures</h4>
+        <ul>
+          <li>Dense tables with up to 37 rows and 36 columns</li>
+          <li>Weak or absent borders between cells</li>
+          <li>Multiple measurement times per day (8am, 2pm, 6pm)</li>
+          <li>Summary rows for 10-day totals and monthly averages</li>
+        </ul>
+
+        <h4>3. Document Degradation</h4>
+        <ul>
+          <li>Faded ink, stains, and tears</li>
+          <li>Variations in paper quality and imaging conditions</li>
+        </ul>
+
+        <p>Previous attempts at automation have had limited success:</p>
+        <ul>
+          <li>Standard OCR models: ~50-90% accuracy (far below the 98% gold standard needed)</li>
+          <li>Commercial solutions like AWS Textract and Google Vision: 88-90% accuracy</li>
+          <li>Custom systems like MeteoSaver: 74% median accuracy, but require extensive manual setup</li>
+        </ul>
+
+        <hr>
+
+        <h3>Our Solution: A Hybrid AI Pipeline</h3>
+        <p>I developed a novel approach that combines the strengths of multimodal large language models (MLLMs) with traditional OCR, creating a system that's both accurate and scalable.</p>
+
+        <h4>The Pipeline</h4>
+
+        <div class="flowchart">
+          <div class="mermaid">
+graph 
+    A[Historical Table Images] --> B[Preprocessing]
+    B --> C[Table Detection]
+    C --> D[MLLM Transcription]
+    C --> E[Cell Detection]
+    D --> F[Cross-Referencing & Validation]
+    E --> F
+    F --> G[Training Data Generation]
+    G --> H[OCR Fine-Tuning]
+    H --> I[Final Transcription]
+          </div>
+        </div>
+        <p><em>Figure: Hybrid AI pipeline combining MLLMs and fine-tuned OCR for historical table transcription.</em></p>
+
+        <h4>Step 1: Table Detection &amp; Preprocessing</h4>
+        <p>First, I locate the table in each scanned image. Historical documents often lack clear borders, so I:</p>
+        <ul>
+          <li>Deskew and binarize the images</li>
+          <li>Search for reference words (like "DATUM" in the top-left corner)</li>
+          <li>Crop the table region based on predefined dimensions for each document type</li>
+        </ul>
+        <p>This way I can find the exact location of the table in the image with high accuracy and little effort.</p>
+
+        <h4>Step 2: Multimodal Transcription with Gemini</h4>
+        <p>I used Google's Gemini 2.5 Flash model &mdash; a multimodal LLM that can understand both images and text &mdash; to extract data directly from the table images.</p>
+        <p>I improved the transcription by guiding the model with:</p>
+        <ul>
+          <li><strong>Structured prompts</strong> in Dutch (matching the language of the records)</li>
+          <li><strong>JSON schema definitions</strong> to enforce consistent output format</li>
+          <li><strong>Dual extraction strategy</strong>: transcribing both row-wise and column-wise</li>
+        </ul>
+        <p>This gave me two independent transcriptions of the same table, which I could later cross-reference.</p>
+
+        <h4>Step 3: Quality Assurance Through Science</h4>
+        <p>Since these are weather records, I can use physical relationships between meteorological variables to validate the transcriptions.</p>
+        <p>For example:</p>
+        <ul>
+          <li><strong>Relative humidity</strong> should relate to temperature and vapor pressure through the psychrometric equation</li>
+          <li><strong>Vapor pressure</strong> can be calculated from dry-bulb and wet-bulb temperatures using the Carrier equation</li>
+        </ul>
+        <p>If the transcribed values don't satisfy these physical laws within a small tolerance, I flag them as potentially incorrect.</p>
+
+        <h4>Step 4: Training Data Generation</h4>
+        <p>Following this validation process, I use the MLLM transcriptions to automatically create training data for a specialized OCR model.</p>
+        <p>I:</p>
+        <ol>
+          <li>Used MeteoSaver's cell detection to identify individual cells in the table</li>
+          <li>Matched these cells with the validated MLLM transcriptions</li>
+          <li>Created synthetic training pairs: (cell image, transcribed text)</li>
+        </ol>
+        <p>This gave me 39,636 training samples from 151 historical tables &mdash; without any manual labeling!</p>
+
+        <h4>Step 5: Fine-Tuning OCR Models</h4>
+        <p>I then fine-tuned a pre-trained OCR model (Tesseract-based) on this synthetic data. The baseline model started with only 19% accuracy on my test set. After fine-tuning I was able to improve this to 81% accuracy on unseen data.</p>
+
+        <hr>
+
+        <h3>The Results: How Good Is AI at This?</h3>
+
+        <h4>MLLM Transcription Performance</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Precision</th>
+              <th>Inclusion Rate</th>
+              <th>Time per Table</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Row-wise extraction</td>
+              <td>90%</td>
+              <td>78%</td>
+              <td>~4 minutes</td>
+            </tr>
+            <tr>
+              <td>Column-wise extraction</td>
+              <td>85%</td>
+              <td>78%</td>
+              <td>~4 minutes</td>
+            </tr>
+            <tr>
+              <td>After cross-referencing</td>
+              <td><strong>94%</strong></td>
+              <td>74%</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>After physical validation</td>
+              <td><strong>97%</strong></td>
+              <td>59%</td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>Key insight:</strong> With validation, I achieved <strong>97% precision</strong>&mdash;rivaling human transcription accuracy (95-98%). The trade-off: I transcribed fewer cells (59% inclusion rate), as strict filtering removed uncertain entries.</p>
+
+        <p>The model struggled most with:</p>
+        <ul>
+          <li>Empty cells (often shifted neighboring values into them)</li>
+          <li>Wind direction columns (old-fashioned handwriting for compass directions)</li>
+          <li>The bottom summary rows (monthly totals and averages)</li>
+        </ul>
+
+        <h4>OCR Fine-Tuning Performance</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Cura&ccedil;ao Precision</th>
+              <th>Sint Eustatius Precision</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Baseline OCR</td>
+              <td>19%</td>
+              <td>48%</td>
+            </tr>
+            <tr>
+              <td>Fine-tuned (all data)</td>
+              <td><strong>81%</strong></td>
+              <td>67%</td>
+            </tr>
+            <tr>
+              <td>Fine-tuned (Cura&ccedil;ao only)</td>
+              <td>50%</td>
+              <td>12%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p><strong>The pattern:</strong> Fine-tuning dramatically improved accuracy on familiar handwriting styles, but struggled to generalize to new styles&mdash;highlighting the importance of diverse training data.</p>
+
+        <h4>Speed Comparison</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Time per Table</th>
+              <th>Cost (Full Dataset)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Manual transcription</td>
+              <td>45 minutes</td>
+              <td>Thousands of dollars</td>
+            </tr>
+            <tr>
+              <td>MLLM (Gemini API)</td>
+              <td><strong>4 minutes</strong></td>
+              <td>~$256</td>
+            </tr>
+            <tr>
+              <td>Fine-tuned OCR</td>
+              <td><strong>2 minutes</strong></td>
+              <td>Free (after setup)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>At the free API rate limit (250 requests/day), transcribing 2027 tables would take ~16 days. With a paid plan, this drops to ~2 days.</p>
+        <p><strong>Environmental impact:</strong> Transcribing the full dataset would use about 0.975 kWh of energy&mdash;roughly equivalent to charging a smartphone 10 times.</p>
+
+        <hr>
+
+        <h3>Lessons Learned &amp; Challenges</h3>
+
+        <h4>What Worked Well</h4>
+        <ul>
+          <li><strong>MLLMs are surprisingly good</strong> at understanding table structure and handwriting simultaneously</li>
+          <li><strong>Physical validation</strong> using meteorological relationships dramatically improved precision</li>
+          <li><strong>Synthetic training data generation</strong> enabled OCR fine-tuning without manual labeling</li>
+          <li><strong>The hybrid approach</strong> combines the strengths of both MLLMs and specialized OCR</li>
+        </ul>
+
+        <h4>Remaining challenges</h4>
+        <ul>
+          <li><strong>Cell detection errors propagate</strong>: A single merged or split cell can misalign an entire row of training labels</li>
+          <li><strong>Generalization is tough</strong>: Models trained on one observer's handwriting don't always transfer to others</li>
+          <li><strong>Empty cells are problematic</strong>: The model often shifted values into empty spaces</li>
+          <li><strong>Training data quality</strong>: I estimated ~22% of generated training samples had errors</li>
+        </ul>
+
+        <h4>Possible paths for improvement</h4>
+        <ul>
+          <li><strong>Better prompt engineering</strong>: Provide examples of correctly transcribed tables to guide the model</li>
+          <li><strong>Enhanced preprocessing</strong>: Alternating row colors might help the model distinguish between rows</li>
+          <li><strong>More rigorous validation</strong>: Add additional checks (daily sums, value ranges, temporal consistency)</li>
+          <li><strong>Human-in-the-loop</strong>: Use MLLMs to assist rather than replace human transcribers</li>
+          <li><strong>Self-hosted models</strong>: Explore open-source MLLMs for more control and lower costs</li>
+        </ul>
+
+        <hr>
+
+        <h3>The Future of Data Rescue</h3>
+        <p>This project showed that <strong>AI can achieve near-human accuracy in transcribing historical documents</strong>, but there's still room for improvement.</p>
+
+        <h4>Next Steps</h4>
+        <ol>
+          <li><strong>Scale up</strong>: Apply the pipeline to the full KNMI archive (2000+ sheets)</li>
+          <li><strong>Improve generalization</strong>: Incorporate more diverse handwriting styles in training</li>
+          <li><strong>Automated correction</strong>: Use MLLMs to automatically fix errors in OCR output</li>
+          <li><strong>Open-source tools</strong>: Package the pipeline for use by other data rescue initiatives</li>
+        </ol>
+
+        <hr>
+
+        <h3>Technical Appendix</h3>
+
+        <h4>Dataset</h4>
+        <ul>
+          <li><strong>Source</strong>: Royal Netherlands Meteorological Institute (KNMI)</li>
+          <li><strong>Locations</strong>: Cura&ccedil;ao, Sint Eustatius, Bonaire, Sint Maarten, Suriname</li>
+          <li><strong>Time period</strong>: Late 19th to early 20th century</li>
+          <li><strong>Format</strong>: High-resolution JPEG images (6000x4000px, 240 DPI)</li>
+          <li><strong>Table types</strong>: Handwritten, hand-drawn, and typewriter-filled tables</li>
+        </ul>
+
+        <h4>Models Used</h4>
+        <ul>
+          <li><strong>MLLM</strong>: Google Gemini 2.5 Flash</li>
+          <li><strong>OCR Baseline</strong>: Tesseract (cobecore_V9-405 model)</li>
+          <li><strong>Cell Detection</strong>: Adapted MeteoSaver algorithm</li>
+        </ul>
+
+        <h4>Code &amp; Resources</h4>
+        <p>The full dataset is available on the <a href="https://dataplatform.knmi.nl/dataset/images-historical-meteorological-datasheets-caribbean-1-0">KNMI Data Platform</a>.</p>
+        <p><em>Want to see the code, read the full scientific report, or discuss the project? <a href="../#contact">Get in touch</a>.</em></p>
+      </article>
+    </section>
+  </main>
+    </div>
+
+  <footer class="wrap footer">
+    <div class="footer-inner">
+      <span>Teun P.</span>
+      <span>Data scientist · Portfolio and notes</span>
+    </div>
+  </footer>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false });
+    
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.hljs) {
+        window.hljs.highlightAll();
+      }
+
+      const article = document.querySelector('article');
+      const tocList = document.getElementById('toc-list');
+      if (!article || !tocList) {
+        return;
+      }
+
+      // Clear existing content
+      tocList.innerHTML = '';
+
+      const headings = article.querySelectorAll('h3, h4');
+      
+      // Track current h3 for nesting h4s
+      let currentH3Item = null;
+      let currentH3List = null;
+
+      headings.forEach(function (heading, index) {
+        if (!heading.id) {
+          const slug = heading.textContent
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+          heading.id = slug ? slug : 'section-' + (index + 1);
+        }
+
+        const tagName = heading.tagName.toLowerCase();
+
+        if (tagName === 'h3') {
+          // Create h3 item with potential children
+          const item = document.createElement('li');
+          item.className = 'toc-h3';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+          
+          // Create nested ul for potential h4 children
+          const childList = document.createElement('ul');
+          childList.className = 'toc-children';
+          item.appendChild(childList);
+          
+          currentH3Item = item;
+          currentH3List = childList;
+          
+          tocList.appendChild(item);
+        } else if (tagName === 'h4' && currentH3List) {
+          // Add h4 under current h3
+          const item = document.createElement('li');
+          item.className = 'toc-h4';
+
+          const link = document.createElement('a');
+          link.href = '#' + heading.id;
+          link.textContent = heading.textContent;
+          item.appendChild(link);
+
+          currentH3List.appendChild(item);
+          
+          // Mark parent as having children
+          if (currentH3Item && !currentH3Item.classList.contains('has-children')) {
+            currentH3Item.classList.add('has-children');
+          }
+        }
+      });
+
+      // Add collapsible behavior to h3 items with children
+      const tocH3Links = tocList.querySelectorAll('li.has-children > a');
+      tocH3Links.forEach(function (link) {
+        const listItem = link.parentElement;
+        const childrenList = listItem.querySelector('.toc-children');
+        
+        // Only add toggle if there are actual children
+        if (childrenList && childrenList.children.length > 0) {
+          // Collapse by default
+          childrenList.classList.add('collapsed');
+          
+          link.style.cursor = 'pointer';
+          link.style.display = 'flex';
+          link.style.alignItems = 'center';
+          
+          const toggleIcon = document.createElement('span');
+          toggleIcon.className = 'toc-toggle';
+          toggleIcon.innerHTML = '&#9660;';
+          toggleIcon.style.marginLeft = '8px';
+          toggleIcon.style.fontSize = '0.7rem';
+          toggleIcon.style.transition = 'transform 0.2s';
+          toggleIcon.style.transform = 'rotate(-90deg)';
+          link.appendChild(toggleIcon);
+          
+          // Toggle when clicking the icon
+          toggleIcon.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isCollapsed = childrenList.classList.toggle('collapsed');
+            toggleIcon.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+          });
+        }
+      });
+      
+      // Initialize Mermaid diagrams
+      const mermaidElements = document.querySelectorAll('.mermaid');
+      mermaidElements.forEach(function(el) {
+        const code = el.textContent;
+        el.innerHTML = code;
+        mermaid.init(undefined, el);
+      });
+    });
+  </script>
+</body>
+</html>

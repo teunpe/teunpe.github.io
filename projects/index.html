@@ -3,49 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Teun P. - Portfolio</title>
+  <title>Projects — Teun P.</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2265%22 font-family=%22IBM Plex Mono,monospace%22 font-size=%2250%22 font-weight=%22600%22 text-anchor=%22middle%22 fill=%22%23111%22>TP</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <header class="header wrap" id="home">
+  <header class="header wrap">
     <div class="topline">
       <div>Teun P.</div>
       <nav class="nav" aria-label="Primary navigation">
-        <a href="projects/index.html">Projects</a>
-        <a href="#about">About</a>
+        <a href="../index.html">Home</a>
+        <a href="index.html">Projects</a>
+
         <a href="#contact">Contact</a>
       </nav>
     </div>
-
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow">Data scientist</div>
-        <h1>Work in progress.</h1>
-        <p>
-          I work as a data scientist and like to tinker in my free time.
-        </p>
-        <div class="hero-links">
-          <a href="#projects">View selected work</a>
-          <a href="#contact">Get in touch</a>
-        </div>
-      </div>
-    </section>
   </header>
 
   <main class="wrap">
-    <section class="section" id="projects">
+    <section class="section">
       <div class="section-head">
         <div>
           <div class="eyebrow">Projects</div>
-          <h2>Selected work</h2>
-        </div>
-        <div class="section-actions">
-          <!-- <p>A small set of case-study style entries. Each one can grow into a full project page later.</p> -->
-          <p><a class="btn" href="projects/index.html">All projects</a></p>
+          <h2>All projects</h2>
         </div>
       </div>
 
@@ -53,7 +36,7 @@
         <article class="project">
           <div class="thumb one" aria-hidden="true"></div>
           <div class="project-info">
-            <h3><a href="projects/processing-rescued-meteorological-data.html">Processing Rescued Meteorological Data</a></h3>
+            <h3><a href="processing-rescued-meteorological-data.html">Processing Rescued Meteorological Data</a></h3>
             <p>Parsing TXT/Excel formatted data into validated DuckDB databases.</p>
           </div>
           <div class="meta-col">
@@ -65,7 +48,7 @@
         <article class="project">
           <div class="thumb two" aria-hidden="true"></div>
           <div class="project-info">
-            <h3><a href="projects/llms-for-data-rescue.html">Using LLMs for Data Rescue</a></h3>
+            <h3><a href="llms-for-data-rescue.html">Using LLMs for Data Rescue</a></h3>
             <p>Rescuing data from scanned handwritten tables using multimodal LLMs and OCR.</p>
           </div>
           <div class="meta-col">
@@ -77,7 +60,7 @@
         <article class="project">
           <div class="thumb three" aria-hidden="true"></div>
           <div class="project-info">
-            <h3><a href="projects/multilingual-topic-modeling.html">Multilingual Topic Modeling using BERT</a></h3>
+            <h3><a href="multilingual-topic-modeling.html">Multilingual Topic Modeling using BERT</a></h3>
             <p>Using topic modelling with BERT embeddings to identify topics of Telegram channels in multiple languages.</p>
           </div>
           <div class="meta-col">
@@ -87,22 +70,7 @@
         </article>
       </div>
     </section>
-
-    <section class="section" id="about">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">About</div>
-          <h2>What I care about</h2>
-        </div>
-      </div>
-
-      <div class="about-copy">
-        <p>
-          After graduating with a master's in computing science this year I started working as a data scientist. I am a developer in the data science team of my company. I am interested in large language models, data engineering, and DevOps.
-        </p>
-      </div>
-    </section>
-
+    
     <section class="section" id="contact">
       <div class="section-head">
         <div>
